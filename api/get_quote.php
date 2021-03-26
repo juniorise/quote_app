@@ -1,8 +1,5 @@
 <?php
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-
+    include "api_constant.php";
     try {
         $conn = new PDO("mysql:host=$servername;dbname=quoteapp", $username, $password);
         // set the PDO error mode to exception

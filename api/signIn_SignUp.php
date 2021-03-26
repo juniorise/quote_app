@@ -27,11 +27,18 @@
         echo json_encode($response);
     }
 
-
     try {
         $sql = $conn->prepare("SELECT * FROM users WHERE username = '$username'");
         $sql->execute();
-        if($sql->rowCount() == 0){
+        if($sql->rowCount() != 0){
+            $result = $sql->fetch(PDO::FETCH_ASSOC);
+            if(password_verify($password,$result['password'])){
+                $create_on = $result['create_on'];
+                responseMessage(200,"Login successfully");
+                return;
+            }
+            responseMessage(400,"Username or password is incorrect");
+        }else {
             try {
                 $signup = $conn->prepare("INSERT INTO users (username, password, create_on) VALUES (:username, :password, :create_on)");
                 $signup->bindParam(':username',$username);
@@ -44,10 +51,7 @@
             }catch(PDOException $e){
                 responseMessage(400,"Signup failed");
             }
-        }else {
-            responseMessage(400,"Username existed");
         }
-     
     }catch(PDOException $e) {
         responseMessage(400,"Bad Request");
     }

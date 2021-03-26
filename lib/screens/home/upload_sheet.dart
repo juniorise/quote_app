@@ -17,6 +17,7 @@ class _UploadQuoteSheetState extends State<UploadQuoteSheet> {
       child: Column(
         children: [
           Container(
+            alignment: Alignment.center,
             margin: EdgeInsets.only(bottom: 4),
             width: 60,
             height: 6,

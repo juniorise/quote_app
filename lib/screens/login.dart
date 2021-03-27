@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:quote_app/screens/home/home_screen.dart';
+import 'package:quote_app/services/auth_api.dart';
+import 'package:quote_app/services/user_storage.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -6,6 +10,12 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  String? error;
+
+  //get value from user
+  final usernameController = TextEditingController();
+  final passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,34 +24,32 @@ class _LoginPageState extends State<LoginPage> {
           decoration: BoxDecoration(
               image: DecorationImage(
             colorFilter: ColorFilter.mode(
-              Colors.black87.withOpacity(0.75), BlendMode.darken),
-            image: NetworkImage("https://wallpaperaccess.com/full/501978.jpg"),
+                Colors.black87.withOpacity(0.75), BlendMode.darken),
+            image: AssetImage('assets/login_background.jpg'),
             fit: BoxFit.cover,
           )),
-        child: ListView(
-          children: <Widget>[
+          child: ListView(children: <Widget>[
             //Title
             Container(
-              alignment: Alignment.topLeft,
-              padding: EdgeInsets.only(top: 95, left: 20),
-              child: Text(
-                'Log in or sign up',
+                alignment: Alignment.topLeft,
+                padding: EdgeInsets.only(top: 95, left: 20),
+                child: Text(
+                  'Log in or sign up',
                   style: TextStyle(
-                  color: Colors.white,
-                  fontFamily: 'Quicksand',
-                  fontSize: 24),
-              )
-            ),
+                      color: Colors.white,
+                      fontFamily: 'quicksand',
+                      fontSize: 24),
+                )),
             Container(
               alignment: Alignment.topLeft,
               padding: EdgeInsets.only(top: 5, left: 20, right: 20, bottom: 20),
               child: Text(
                 'to quote app',
                 style: TextStyle(
-                color: Colors.white,
-                fontFamily: 'Quicksand',
-                fontWeight: FontWeight.bold,
-                fontSize: 24,
+                  color: Colors.white,
+                  fontFamily: 'quicksand',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
                 ),
               ),
             ),
@@ -49,11 +57,16 @@ class _LoginPageState extends State<LoginPage> {
             Container(
               padding: EdgeInsets.only(top: 20, bottom: 5, left: 20, right: 20),
               child: TextField(
+                controller: usernameController,
                 style: TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)),
                   hintText: 'Username',
-                  hintStyle: TextStyle(color: Colors.white70, fontFamily: 'Quicksand', fontWeight: FontWeight.w300),
+                  hintStyle: TextStyle(
+                      color: Colors.white70,
+                      fontFamily: 'quicksand',
+                      fontWeight: FontWeight.w300),
                   fillColor: Colors.white.withOpacity(0.2),
                   filled: true,
                 ),
@@ -63,12 +76,17 @@ class _LoginPageState extends State<LoginPage> {
             Container(
               padding: EdgeInsets.only(top: 5, bottom: 5, left: 20, right: 20),
               child: TextField(
+                controller: passwordController,
                 style: TextStyle(color: Colors.white),
                 obscureText: true,
                 decoration: InputDecoration(
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)),
                   hintText: 'Password',
-                  hintStyle: TextStyle(color: Colors.white70, fontFamily: 'Quicksand',fontWeight: FontWeight.w300),
+                  hintStyle: TextStyle(
+                      color: Colors.white70,
+                      fontFamily: 'quicksand',
+                      fontWeight: FontWeight.w300),
                   fillColor: Colors.white.withOpacity(0.2),
                   filled: true,
                 ),
@@ -80,16 +98,41 @@ class _LoginPageState extends State<LoginPage> {
               padding: EdgeInsets.only(top: 5, left: 20, right: 20),
               child: RaisedButton(
                 color: Colors.lightBlue[900],
-                onPressed: () {},
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                onPressed: () async {
+                  print(passwordController.text);
+                  if (passwordController.text.length >= 8) {
+                    error = "Password must be shorter than 8 digits";
+                  } else if (usernameController.text.isEmpty) {
+                    error = "Username and password must be filled";
+                  } else {
+                    error = null;
+                    AuthApi api = AuthApi();
+                    await api.logIntoAccount(
+                        username: usernameController.text,
+                        password: passwordController.text);
+                    if (api.success()) {
+                      await UserStorage.setUser(usernameController.text);
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                          builder: (context) => HomeScreen()));
+                    } else {
+                      error = api.message();
+                    }
+                  }
+
+                  if (error != null) {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text(error ?? "")));
+                  }
+                },
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
                 child: Text(
-                  'Log in',
+                  'Log into account',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w300,
-                    fontFamily: 'Quicksand'
-                  ),
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w300,
+                      fontFamily: 'quicksand'),
                 ),
               ),
             ),

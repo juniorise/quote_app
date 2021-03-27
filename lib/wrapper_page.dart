@@ -12,11 +12,6 @@ class WrapperPage extends StatelessWidget {
       future: UserStorage.getUser(),
       builder: (context, snapshot) {
         bool isSignin = snapshot.hasData && snapshot.data.toString().isNotEmpty;
-        if (snapshot.hasData == false) {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        }
         if (isSignin) {
           return HomeScreen();
         } else {

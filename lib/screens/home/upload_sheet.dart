@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:quote_app/services/quote_api.dart';
+import 'package:quote_app/services/user_storage.dart';
+import 'package:top_snackbar_flutter/custom_snack_bar.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class UploadQuoteSheet extends StatefulWidget {
   const UploadQuoteSheet({Key? key}) : super(key: key);
@@ -8,6 +12,9 @@ class UploadQuoteSheet extends StatefulWidget {
 }
 
 class _UploadQuoteSheetState extends State<UploadQuoteSheet> {
+  String? error;
+  late String username;
+
   final authorController = TextEditingController();
   final quoteController = TextEditingController();
 
@@ -83,24 +90,63 @@ class _UploadQuoteSheetState extends State<UploadQuoteSheet> {
                       ),
                     ),
                     SizedBox(height: 8),
-                    GestureDetector(
-                      onTap: () {
-                        print(authorController.text);
-                        print(quoteController.text);
+                    InkWell(
+                      onTap: () async {
+                        await UserStorage.getUser().then((value) {
+                          if (value != null) {
+                            username = value;
+                          }
+                        });
+
+                        if (authorController.text.length == 0) {
+                          error = "Author field must be filled";
+                        } else if (quoteController.text.length <= 10) {
+                          error = "Quote text must be longer than 10 letters";
+                        } else {
+                          error = null;
+                          QuoteApi api = QuoteApi();
+                          await api.createQuote(
+                              quote: quoteController.text,
+                              author: authorController.text,
+                              username: username);
+                          if (api.success()) {
+                            Navigator.of(context).pop();
+                            showTopSnackBar(
+                            context,
+                            CustomSnackBar.success(
+                              message:
+                                  "Upload Successful",
+                            ),   
+                          );
+                          } else {
+                            error = api.message();
+                          }
+                        }
+                        if (error != null) {
+                          Navigator.of(context).pop();
+                          showTopSnackBar(
+                            context,
+                            CustomSnackBar.error(
+                              message:
+                                  "${error ?? ""}",
+                            ),   
+                          );
+                        }
                       },
                       child: Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 137, vertical: 14),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).primaryColor,
-                            borderRadius: BorderRadius.circular(10),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 137, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Upload',
+                            style: TextStyle(color: Colors.white),
                           ),
-                          child: Center(
-                            child: Text(
-                              'Upload',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          )),
+                        ),
+                      ),
                     )
                   ],
                 ),

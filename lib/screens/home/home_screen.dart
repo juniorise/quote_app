@@ -1,7 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:quote_app/models/quote/quote_list_model.dart';
+import 'package:quote_app/models/quote/quote_model.dart';
 import 'package:quote_app/screens/home/upload_sheet.dart';
+import 'package:quote_app/services/quote_api.dart';
 
 List<String> images = [
   "https://miro.medium.com/max/8576/0*zBu6EBAwjXXXHz-z",
@@ -45,19 +48,49 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.black87,
       body: Stack(
         children: [
-          PageView(
-            controller: pageController,
-            scrollDirection: Axis.vertical,
-            onPageChanged: (int index) {
-              setState(() => imageIndex = index % (images.length - 1));
+          FutureBuilder(
+            future: QuoteApi().fetchAll(),
+            builder: (context, snapshot) {
+              List<QuoteModel> users = [
+                QuoteModel(
+                  author: "Nelson Mandela",
+                  quote:
+                      "The greatest glory in living lies not in never falling, but in rising every time we fall.",
+                ),
+                QuoteModel(
+                  author: "Walt Disney",
+                  quote:
+                      "The way to get started is to quit talking and begin doing.",
+                ),
+                QuoteModel(
+                  author: "Steve Jobs",
+                  quote:
+                      "Your time is limited, so don't waste it living someone else's life. Don't be trapped by dogma – which is living with the results of other people's thinking.",
+                ),
+              ];
+
+              if (snapshot.hasData) {
+                users.addAll((snapshot.data as QuoteListModel).users ?? []);
+              }
+
+              return PageView(
+                controller: pageController,
+                scrollDirection: Axis.vertical,
+                onPageChanged: (int index) {
+                  setState(() => imageIndex = index % (images.length - 1));
+                },
+                children: List.generate(
+                  users.length,
+                  (index) {
+                    return buildQuote(
+                      context: context,
+                      quote: users[index].quote ?? "",
+                      authur: users[index].author ?? "",
+                    );
+                  },
+                ),
+              );
             },
-            children: [
-              buildQuote(context),
-              buildQuote(context),
-              buildQuote(context),
-              buildQuote(context),
-              buildQuote(context),
-            ],
           ),
           buildPageIndicator(statusBarHeight),
           buildAddQuoteButton(statusBarHeight, context),
@@ -76,11 +109,11 @@ class _HomeScreenState extends State<HomeScreen> {
             backgroundColor: Colors.transparent,
             isScrollControlled: true,
             shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10),
-                      ),
-                    ),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(10),
+              ),
+            ),
             context: context,
             builder: (context) {
               return UploadQuoteSheet();
@@ -150,7 +183,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildQuote(BuildContext context) {
+  Widget buildQuote({
+    required BuildContext context,
+    required String quote,
+    required String authur,
+  }) {
     return Stack(
       children: [
         ValueListenableBuilder(
@@ -207,14 +244,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   alignment: WrapAlignment.center,
                   children: [
                     Text(
-                      "Don't let what you cannot do interfere with what you can do.",
+                      "$quote",
                       style: Theme.of(context).textTheme.headline5,
                       textAlign: TextAlign.center,
                     ),
                     Container(
                       margin: const EdgeInsets.only(top: 8.0),
                       child: Text(
-                        "– John Wooden –",
+                        "– $authur –",
                         style: Theme.of(context).textTheme.bodyText1,
                         textAlign: TextAlign.center,
                       ),

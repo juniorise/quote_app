@@ -100,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
                 color: Colors.lightBlue[900],
                 onPressed: () async {
                   print(passwordController.text);
-                  if (passwordController.text.length >= 8) {
+                  if (passwordController.text.length <= 8) {
                     error = "Password must be shorter than 8 digits";
                   } else if (usernameController.text.isEmpty) {
                     error = "Username and password must be filled";

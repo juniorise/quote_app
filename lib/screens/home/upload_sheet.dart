@@ -110,14 +110,13 @@ class _UploadQuoteSheetState extends State<UploadQuoteSheet> {
                               author: authorController.text,
                               username: username);
                           if (api.success()) {
-                            Navigator.of(context).pop();
+                            Navigator.of(context).pop(true);
                             showTopSnackBar(
-                            context,
-                            CustomSnackBar.success(
-                              message:
-                                  "Upload Successful",
-                            ),   
-                          );
+                              context,
+                              CustomSnackBar.success(
+                                message: "Upload Successful",
+                              ),
+                            );
                           } else {
                             error = api.message();
                           }
@@ -127,9 +126,8 @@ class _UploadQuoteSheetState extends State<UploadQuoteSheet> {
                           showTopSnackBar(
                             context,
                             CustomSnackBar.error(
-                              message:
-                                  "${error ?? ""}",
-                            ),   
+                              message: "${error ?? ""}",
+                            ),
                           );
                         }
                       },

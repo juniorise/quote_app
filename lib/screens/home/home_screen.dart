@@ -51,43 +51,32 @@ class _HomeScreenState extends State<HomeScreen> {
           FutureBuilder(
             future: QuoteApi().fetchAll(),
             builder: (context, snapshot) {
-              List<QuoteModel> users = [
-                QuoteModel(
-                  author: "Nelson Mandela",
-                  quote:
-                      "The greatest glory in living lies not in never falling, but in rising every time we fall.",
-                ),
-                QuoteModel(
-                  author: "Walt Disney",
-                  quote:
-                      "The way to get started is to quit talking and begin doing.",
-                ),
-                QuoteModel(
-                  author: "Steve Jobs",
-                  quote:
-                      "Your time is limited, so don't waste it living someone else's life. Don't be trapped by dogma – which is living with the results of other people's thinking.",
-                ),
-              ];
+              List<QuoteModel> users = [];
 
               if (snapshot.hasData) {
-                users.addAll((snapshot.data as QuoteListModel).users ?? []);
+                users = (snapshot.data as QuoteListModel).users ?? [];
               }
 
-              return PageView(
-                controller: pageController,
-                scrollDirection: Axis.vertical,
-                onPageChanged: (int index) {
-                  setState(() => imageIndex = index % (images.length - 1));
-                },
-                children: List.generate(
-                  users.length,
-                  (index) {
-                    return buildQuote(
-                      context: context,
-                      quote: users[index].quote ?? "",
-                      authur: users[index].author ?? "",
-                    );
+              return AnimatedOpacity(
+                opacity: snapshot.hasData ? 1 : 0,
+                duration: const Duration(milliseconds: 350),
+                child: PageView(
+                  controller: pageController,
+                  scrollDirection: Axis.vertical,
+                  onPageChanged: (int index) {
+                    setState(() => imageIndex = index % (images.length - 1));
                   },
+                  children: List.generate(
+                    users.length,
+                    (index) {
+                      int _index = users.length - 1 - index;
+                      return buildQuote(
+                        context: context,
+                        quote: users[_index].quote ?? "",
+                        authur: users[_index].author ?? "",
+                      );
+                    },
+                  ),
                 ),
               );
             },
@@ -118,7 +107,12 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (context) {
               return UploadQuoteSheet();
             },
-          );
+          ).then((success) {
+            print("$success");
+            if (success == true) {
+              setState(() {});
+            }
+          });
         },
         child: Row(
           children: [

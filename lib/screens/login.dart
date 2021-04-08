@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:quote_app/screens/home/home_screen.dart';
 import 'package:quote_app/services/auth_api.dart';
 import 'package:quote_app/services/user_storage.dart';
+import 'package:top_snackbar_flutter/custom_snack_bar.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -99,11 +101,10 @@ class _LoginPageState extends State<LoginPage> {
               child: RaisedButton(
                 color: Colors.lightBlue[900],
                 onPressed: () async {
-                  print(passwordController.text);
-                  if (passwordController.text.length <= 8) {
-                    error = "Password must be shorter than 8 digits";
-                  } else if (usernameController.text.isEmpty) {
+                  if (usernameController.text.isEmpty) {
                     error = "Username and password must be filled";
+                  } else if (passwordController.text.length <= 4) {
+                    error = "Password must be longer than 4 digits";
                   } else {
                     error = null;
                     AuthApi api = AuthApi();
@@ -120,8 +121,12 @@ class _LoginPageState extends State<LoginPage> {
                   }
 
                   if (error != null) {
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(SnackBar(content: Text(error ?? "")));
+                    showTopSnackBar(
+                      context,
+                      CustomSnackBar.error(
+                        message: "${error ?? ""}",
+                      ),
+                    );
                   }
                 },
                 shape: RoundedRectangleBorder(
